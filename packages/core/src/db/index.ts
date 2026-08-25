@@ -37,12 +37,14 @@ export {
 export {
   UsenetMetricsRepository,
   type UsenetMetricDelta,
+  type UsenetMetricScope,
   type UsenetProviderRollup,
   type UsenetMetricBucket,
 } from './repositories/usenet-metrics.js';
 export {
   UsenetIndexerMetricsRepository,
   type UsenetIndexerGrabDelta,
+  type UsenetIndexerScope,
   type UsenetIndexerRollup,
   type UsenetIndexerLastError,
 } from './repositories/usenet-indexer-metrics.js';
@@ -64,6 +66,10 @@ export {
   type ConfigProfile,
   type ConfigAliasTarget,
 } from './repositories/config-profiles.js';
+export {
+  LinkedAccountRepository,
+  MAX_LINKED_ACCOUNTS_PER_USER,
+} from './repositories/linked-accounts.js';
 export * from './schemas.js';
 
 export { sql, raw, join, SqlFragment } from './sql.js';

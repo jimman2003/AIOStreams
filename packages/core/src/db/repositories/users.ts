@@ -20,6 +20,7 @@ import {
   assertConfigAccessKey,
 } from '../../utils/index.js';
 import { ConfigProfileRepository } from './config-profiles.js';
+import { LinkedAccountRepository } from './linked-accounts.js';
 
 const APIError = constants.APIError;
 const logger = createLogger('users');
@@ -84,6 +85,7 @@ export class UserRepository {
     config.trusted = false;
     config.ip = undefined;
     config.activeVariants = undefined;
+    config.variantSelectorLocation = undefined;
 
     let configToValidate: UserData = config;
     if (config.parentConfig?.uuid) {
@@ -242,6 +244,7 @@ export class UserRepository {
     decryptedConfig.uuid = uuid;
     decryptedConfig.ip = undefined;
     decryptedConfig.activeVariants = undefined;
+    decryptedConfig.variantSelectorLocation = undefined;
     return applyMigrations(decryptedConfig);
   }
 
@@ -358,6 +361,7 @@ export class UserRepository {
     config.trusted = isTrustedUuid(uuid);
     config.ip = undefined;
     config.activeVariants = undefined;
+    config.variantSelectorLocation = undefined;
 
     const db = getDb();
     const current = await db.maybeOne<UserRow>(
@@ -533,6 +537,11 @@ export class UserRepository {
         // Saved configurations hold the same blob as the install URL, so they
         // break on the next password change unless rotated with it.
         await ConfigProfileRepository.reencryptForUuid(
+          tx,
+          uuid,
+          newEncryptedPasswordToken
+        );
+        await LinkedAccountRepository.rewriteManifestUrlsForUuid(
           tx,
           uuid,
           newEncryptedPasswordToken

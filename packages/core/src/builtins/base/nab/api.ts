@@ -122,6 +122,17 @@ const createTorznabItemSchema = () =>
         .transform((arr) => arr?.[0]),
       guid: GuidSchema,
       pubDate: z.array(z.string()).transform((arr) => arr[0]),
+      prowlarrindexer: z
+        .array(
+          z.object({
+            _: z.string(),
+            $: z.object({ id: z.string() }),
+          })
+        )
+        .optional()
+        .transform((arr) =>
+          arr?.[0] ? { name: arr[0]._, id: arr[0].$.id } : undefined
+        ),
       jackettindexer: z
         .array(
           z.object({
@@ -162,6 +173,7 @@ const createTorznabItemSchema = () =>
       link: item.link,
       guid: item.guid,
       pubDate: item.pubDate,
+      prowlarrindexer: item.prowlarrindexer,
       jackettindexer: item.jackettindexer,
       type: item.type,
       size: item.size,
@@ -541,7 +553,6 @@ export class BaseNabApi<N extends 'torznab' | 'newznab'> {
 
   private getHeaders = (): Record<string, string> => {
     const headers: Record<string, string> = {
-      'Content-Type': 'application/xml',
       Accept: 'application/rss+xml, text/rss+xml, application/xml, text/xml',
       'User-Agent': this.userAgent,
     };

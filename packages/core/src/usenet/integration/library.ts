@@ -2,7 +2,11 @@ import { promises as fs } from 'node:fs';
 import path from 'node:path';
 import { ParsedResult } from '@viren070/parse-torrent-title';
 import { parseTorrentTitleCached } from '../../parser/title.js';
-import { downloadManager, NzbTooLargeError } from '../../utils/index.js';
+import {
+  downloadManager,
+  NotAnNzbError,
+  NzbTooLargeError,
+} from '../../utils/index.js';
 import { getDataFolder } from '../../utils/general.js';
 import { createLogger } from '../../logging/logger.js';
 import {
@@ -221,6 +225,17 @@ export async function fetchNzb(
   try {
     return await downloadManager.fetchNzb(url, { signal });
   } catch (err) {
+    if (err instanceof NotAnNzbError) {
+      throw new DebridError(err.message, {
+        statusCode: 502,
+        statusText: 'Bad Gateway',
+        code: 'BAD_GATEWAY',
+        headers: {},
+        body: null,
+        type: 'upstream_error',
+        cause: err,
+      });
+    }
     if (err instanceof NzbTooLargeError) {
       throw new DebridError(err.message, {
         statusCode: 413,
@@ -321,7 +336,12 @@ function collectLibraryFiles(
         continue;
       }
       files.push({
-        name: innerDisplayName(inner.path, innerCount, releaseName),
+        name: innerDisplayName(
+          inner.path,
+          innerCount,
+          releaseName,
+          inner.format
+        ),
         size: inner.size,
         index: innerSeq++,
         path: inner.path,
